@@ -2,7 +2,6 @@
 // Free APIs for pulling text + video training content
 
 const WGER_BASE = 'https://wger.de/api/v2';
-const PIPED_BASE = 'https://pipedapi.kavin.rocks';
 
 // ── Wger Exercise API (free, no key) ──────────────────────────
 export async function fetchExercises({ category, muscle, limit = 20, offset = 0 } = {}) {
@@ -29,8 +28,9 @@ export async function searchExercises(term, limit = 20) {
   return data.suggestions || [];
 }
 
-// ── Video Search (multiple free YouTube proxy APIs, no key) ───
-// Tries Piped instances, then Invidious instances, then returns fallback
+// ── Video Search ──────────────────────────────────────────────
+// Tries multiple free APIs to get YouTube video IDs for embedding.
+// Order: Piped → Invidious → CORS-proxy scrape → returns empty
 
 const PIPED_INSTANCES = [
   'https://pipedapi.kavin.rocks',
@@ -45,6 +45,13 @@ const INVIDIOUS_INSTANCES = [
   'https://invidious.nerdvpn.de',
   'https://invidious.materialio.us',
   'https://yewtu.be',
+  'https://inv.tux.pizza',
+  'https://invidious.protokolltier.dev',
+];
+
+const CORS_PROXIES = [
+  'https://corsproxy.io/?url=',
+  'https://api.allorigins.win/raw?url=',
 ];
 
 // Try Piped API
@@ -97,15 +104,61 @@ async function tryInvidious(query) {
   return null;
 }
 
+// Try CORS proxy to scrape YouTube search results for video IDs
+async function tryCorsProxy(query) {
+  const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const res = await fetch(
+        `${proxy}${encodeURIComponent(ytUrl)}`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (!res.ok) continue;
+      const html = await res.text();
+      // Extract video IDs from YouTube's HTML/JSON
+      const ids = [];
+      const regex = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
+      let match;
+      const seen = new Set();
+      while ((match = regex.exec(html)) !== null && ids.length < 8) {
+        if (!seen.has(match[1])) {
+          seen.add(match[1]);
+          ids.push(match[1]);
+        }
+      }
+      if (ids.length === 0) continue;
+      // Extract titles if possible
+      const titleRegex = /"title":\{"runs":\[\{"text":"(.*?)"\}/g;
+      const titles = [];
+      while ((match = titleRegex.exec(html)) !== null) {
+        titles.push(match[1]);
+      }
+      return ids.map((id, i) => ({
+        id,
+        title: titles[i] || `${query} — Video ${i + 1}`,
+        thumbnail: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+        duration: 0,
+        channel: '',
+        views: 0,
+      }));
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
 export async function searchVideos(query) {
-  // Try Piped first, then Invidious
+  // Try each approach in order
   const piped = await tryPiped(query);
   if (piped) return piped;
 
   const invidious = await tryInvidious(query);
   if (invidious) return invidious;
 
-  throw new Error('Video search unavailable');
+  const proxy = await tryCorsProxy(query);
+  if (proxy) return proxy;
+
+  // Return empty array instead of throwing — the UI handles this
+  return [];
 }
 
 // Build a YouTube embed URL from a video ID

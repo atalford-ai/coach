@@ -59,31 +59,35 @@ function Chip({ label, active, onClick }) {
 
 // ══════════════════════════════════════════════════════════════
 // VIDEO POPOUT — fullscreen overlay with embedded player
+// Everything stays in the app — no new tabs, no leaving the page
 // ══════════════════════════════════════════════════════════════
 function VideoPopout({ query, onClose }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [playing, setPlaying] = useState(null);
+  const [retrying, setRetrying] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const results = await searchVideos(query);
-        if (!cancelled) setVideos(results);
-      } catch (err) {
-        if (!cancelled) setError(err.message);
-      }
-      if (!cancelled) setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [query]);
+  const doSearch = async () => {
+    setLoading(true);
+    try {
+      const results = await searchVideos(query);
+      setVideos(results);
+      // Auto-play first result
+      if (results.length > 0 && !playing) setPlaying(results[0]);
+    } catch { setVideos([]); }
+    setLoading(false);
+  };
 
-  // Format duration
+  useEffect(() => { doSearch(); }, [query]);
+
+  const retry = async () => {
+    setRetrying(true);
+    await doSearch();
+    setRetrying(false);
+  };
+
   const fmt = (s) => {
+    if (!s) return '';
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
@@ -92,11 +96,11 @@ function VideoPopout({ query, onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
-      background: THEME.bg + 'f5',
+      background: THEME.bg,
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
-      {/* Top bar */}
+      {/* Top bar — BACK button always visible */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 16px', borderBottom: `1px solid ${THEME.g700}`,
@@ -109,17 +113,20 @@ function VideoPopout({ query, onClose }) {
         }}>
           <span style={{ fontSize: 18 }}>&larr;</span> BACK
         </button>
-        <div style={{ ...S.label, color: THEME.g500, fontSize: 10 }}>
-          TRAINING VIDEOS
-        </div>
+        {playing && (
+          <button onClick={() => setPlaying(null)} style={{
+            background: THEME.g700, border: 'none', color: THEME.g300,
+            padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+            ...S.header, fontSize: 11,
+          }}>
+            CLOSE PLAYER
+          </button>
+        )}
       </div>
 
-      {/* Embedded player */}
+      {/* Embedded YouTube player — stays in the app */}
       {playing && (
-        <div style={{
-          width: '100%', background: '#000', flexShrink: 0,
-          position: 'relative',
-        }}>
+        <div style={{ width: '100%', background: '#000', flexShrink: 0 }}>
           <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
             <iframe
               src={youtubeEmbedUrl(playing.id)}
@@ -134,7 +141,9 @@ function VideoPopout({ query, onClose }) {
           </div>
           <div style={{ padding: '10px 16px', background: THEME.g900 }}>
             <div style={{ ...S.header, fontSize: 14, color: THEME.white }}>{playing.title}</div>
-            <div style={{ fontSize: 11, color: THEME.g500, marginTop: 2 }}>{playing.channel}</div>
+            {playing.channel && (
+              <div style={{ fontSize: 11, color: THEME.g500, marginTop: 2 }}>{playing.channel}</div>
+            )}
           </div>
         </div>
       )}
@@ -142,7 +151,7 @@ function VideoPopout({ query, onClose }) {
       {/* Video list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
         <div style={{ ...S.label, color: THEME.accent, marginBottom: 10 }}>
-          RESULTS FOR: "{query}"
+          {videos.length > 0 ? `${videos.length} VIDEOS` : 'SEARCHING'}: "{query}"
         </div>
 
         {loading && (
@@ -151,22 +160,27 @@ function VideoPopout({ query, onClose }) {
           </div>
         )}
 
-        {error && (
-          <div style={{ textAlign: 'center', padding: 20, fontSize: 13 }}>
-            <a
-              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+        {/* No results — retry button, no external links */}
+        {!loading && videos.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 30 }}>
+            <div style={{ fontSize: 14, color: THEME.g300, marginBottom: 16 }}>
+              No videos found yet. The video APIs may be warming up.
+            </div>
+            <button
+              onClick={retry}
+              disabled={retrying}
               style={{
-                display: 'block', padding: '14px 20px', marginBottom: 12,
-                background: '#ff0000', color: '#fff', borderRadius: 10,
-                textDecoration: 'none', ...S.header, fontSize: 15,
+                padding: '14px 32px',
+                background: THEME.accent, color: THEME.bg,
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                ...S.header, fontSize: 15,
+                opacity: retrying ? 0.5 : 1,
               }}
             >
-              OPEN ON YOUTUBE
-            </a>
-            <div style={{ fontSize: 12, color: THEME.g500 }}>
-              Embedded search is temporarily unavailable. Tap above to watch on YouTube.
+              {retrying ? 'SEARCHING...' : 'RETRY SEARCH'}
+            </button>
+            <div style={{ fontSize: 12, color: THEME.g500, marginTop: 16 }}>
+              Trying multiple video sources automatically.
             </div>
           </div>
         )}
@@ -207,17 +221,13 @@ function VideoPopout({ query, onClose }) {
                   overflow: 'hidden', textOverflow: 'ellipsis',
                   display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                 }}>{v.title}</div>
-                <div style={{ fontSize: 11, color: THEME.g500, marginTop: 4 }}>{v.channel}</div>
+                {v.channel && (
+                  <div style={{ fontSize: 11, color: THEME.g500, marginTop: 4 }}>{v.channel}</div>
+                )}
               </div>
             </div>
           ))}
         </div>
-
-        {!loading && videos.length === 0 && !error && (
-          <div style={{ textAlign: 'center', padding: 30, color: THEME.g500, fontSize: 13 }}>
-            No videos found for this search.
-          </div>
-        )}
       </div>
     </div>
   );
