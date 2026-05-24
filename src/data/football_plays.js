@@ -405,6 +405,83 @@ export const FOOTBALL_PLAYS = [
     ['Cover 2 Flat / Half', 'Backpedal Technique', 'Break on the Ball', 'Film Study Session'],
     ['COL','PRO']),
 
+  play('Tampa 2', 'coverage', 'Nickel / 4-3',
+    'Cover 2 variation where the Mike LB drops to the deep middle, turning it into a 3-deep look. Invented by Tony Dungy\'s Bucs.',
+    {
+      DB:  'Corners jam and squat on the flat, same as Cover 2. Funnel receivers inside.',
+      LB:  'Mike LB: sprint to the deep middle hole between the safeties. You\'re the 3rd deep defender. Will/Sam: hook-curl zones.',
+      DL:  '4-man rush with contain. The front four MUST get pressure — Tampa 2 relies on it.',
+      Safety: 'Deep halves, same as Cover 2. Trust that the Mike has the middle seam covered. Drive on throws to your half.',
+    },
+    ['Zone Drop / Hook-Curl', 'Backpedal Technique', 'Break on the Ball', 'Pursuit Angles'],
+    ['COL','PRO']),
+
+  play('Cover 2 Man Under', 'coverage', 'Nickel',
+    'Two deep safeties with man coverage underneath. Combines the deep protection of Cover 2 with man-to-man on routes.',
+    {
+      DB:  'Man-to-man on your WR, but you have safety help over the top. Play aggressive underneath — deny the short stuff.',
+      LB:  'Man on TE or RB. Match routes. You have deep help, so play the underneath aggressively.',
+      DL:  '4-man rush. Get pressure — man coverage underneath can\'t hold forever.',
+      Safety: 'Split the deep halves. Help over the top on any vertical threats. Let the corners play man below you.',
+    },
+    ['Man-to-Man / Trail Technique', 'Press Coverage', 'Cover 2 Flat / Half', 'Break on the Ball'],
+    ['COL','PRO']),
+
+  play('Cover 3 Buzz', 'coverage', 'Base / Nickel',
+    'Cover 3 variation where the strong safety buzzes down to the flat instead of playing deep, creating a robber look.',
+    {
+      DB:  'Corners: deep third technique. Read #2 to the QB.',
+      LB:  'Hook-curl-flat zones. If the SS is in the flat, you can stay tighter to the hook area.',
+      DL:  '4-man rush. Win your 1-on-1 — this is a zone look behind you.',
+      Safety: 'SS: buzz to the flat immediately — rob any quick throws. FS: center field, deep middle third. Cover more ground.',
+    },
+    ['Cover 3 / Deep Third', 'Robber / Rat Coverage', 'Break on the Ball', 'Zone Drop / Hook-Curl'],
+    ['HS','COL','PRO']),
+
+  play('Quarters Match (Pattern Read)', 'coverage', 'Nickel / Dime',
+    'Pattern-matching quarters — starts as zone, converts to man based on route distribution. The modern NFL coverage.',
+    {
+      DB:  'Read #2. If #2 goes vertical, carry #1 man-to-man. If #2 goes short/inside, look to rob #1\'s route underneath.',
+      LB:  'Read #3 (TE/RB). Match any vertical by #3. If #3 blocks or goes flat, look for crossers to wall off.',
+      DL:  '4-man rush. Keep the QB in the pocket — pattern match takes a beat to sort out assignments.',
+      Safety: 'Read #2. If #2 goes vertical, match him man-to-man. If #2 goes under, help over the top on #1.',
+    },
+    ['Backpedal Technique', 'Man-to-Man / Trail Technique', 'Film Study Session', 'Break on the Ball'],
+    ['PRO']),
+
+  play('Bracket Coverage (Cloud/Clamp)', 'coverage', 'Nickel / Dime',
+    'Double-team the opponent\'s best receiver — one defender underneath, one over the top. Takes away the #1 option.',
+    {
+      DB:  'Corner on the bracketed WR plays underneath. Deny the short/intermediate. The safety has your back deep.',
+      LB:  'Cover your man normally. The bracket frees you up — one less elite receiver to worry about.',
+      DL:  'Rush the passer. The QB\'s first read is taken away — force him to his 2nd or 3rd option. You have time.',
+      Safety: 'Safety over the top of the bracketed WR. Take away the deep ball. Let the corner handle everything underneath.',
+    },
+    ['Man-to-Man / Trail Technique', 'Press Coverage', 'Film Study Session', 'Backpedal Technique'],
+    ['COL','PRO']),
+
+  play('Prevent / Quarters Prevent', 'coverage', 'Dime / Quarter',
+    'End-of-half or end-of-game defense. Drop everyone deep, give up the short stuff, protect the deep ball and sidelines.',
+    {
+      DB:  'Deep zones. Do NOT get beat deep. Give up 5-10 yard completions — just don\'t give up the big play or the sideline.',
+      LB:  'Drop deep — 15-18 yards. Cover any crossers or intermediate routes. You\'re a safety net, not a run stopper right now.',
+      DL:  '3-man rush. Contain the QB. Don\'t let him scramble for a first down. Just keep him in the pocket.',
+      Safety: 'Ultra-deep. 25+ yards off the ball. Nothing gets behind you. Break on everything thrown in your half.',
+    },
+    ['Backpedal Technique', 'Break on the Ball', 'Cover 3 / Deep Third', 'Tackling in Space'],
+    ['HS','COL','PRO']),
+
+  play('Red Zone Defense (Tight)', 'coverage', 'Goal Line / Nickel',
+    'Inside the 20 — the field shrinks. Tighten coverage, take away the end zone, force field goals.',
+    {
+      DB:  'Press coverage. No cushion — the end zone is right there. Don\'t let the WR get a free release into the end zone.',
+      LB:  'Squeeze the formation. Take away crossing routes and TE seams. Be physical.',
+      DL:  'Collapse the pocket. The QB has nowhere to step up. Drive him into the back of the end zone.',
+      Safety: 'Play the goal posts as your deep help. Take away the fade and the post. Watch for back-shoulder throws.',
+    },
+    ['Press Coverage', 'Tackle Circuit', 'Break on the Ball', 'Man-to-Man / Trail Technique'],
+    ['HS','COL','PRO']),
+
   // ══════════════════════════════════════════════════════════════
   // BLITZ PACKAGES
   // ══════════════════════════════════════════════════════════════
@@ -453,6 +530,72 @@ export const FOOTBALL_PLAYS = [
     ['Blitz Timing', 'Pursuit Angles', 'Tackle Circuit', 'Read and React (Run Fits)'],
     ['COL','PRO']),
 
+  play('Double A-Gap Mug', 'blitz', 'Nickel / Dime',
+    'Both inside LBs walk up to the A-gaps pre-snap. They might both blitz, one might drop — the offense has to guess.',
+    {
+      DB:  'Man or zone behind. The OL is locked on the A-gap threats — your pass rush help is the confusion.',
+      LB:  'Both LBs align in the A-gaps. On the snap: both fire, or one drops into coverage. The call dictates who goes.',
+      DL:  'Slant away from the mugging LBs. If they blitz, you occupy blockers. If one drops, you rush harder.',
+      Safety: 'If both LBs blitz, you may need to replace one in coverage. Read the call and rotate.',
+    },
+    ['Blitz Timing', 'Read and React (Run Fits)', 'Zone Drop / Hook-Curl', 'Shed Block Drill'],
+    ['COL','PRO']),
+
+  play('Fire Zone (3-Rush, Zone Blitz)', 'blitz', '3-4 / Nickel',
+    'Rush 5, drop 6 into zone coverage. Three down linemen rush while two LBs/DBs add pressure. Zone coverage hides the blitz.',
+    {
+      DB:  'Play your zone. You\'re not blitzing — read the QB and break on the throw. Cover the vacated area.',
+      LB:  'Blitzers: time the snap and attack your gap. Droppers: get to your zone landmark immediately — you\'re replacing someone.',
+      DL:  '3-man rush. One DE drops into the flat. The other two DL must win — with only 3 rushing, every rep counts.',
+      Safety: 'Deep coverage. The zone behind the blitz depends on you being in position. Communicate with the corners.',
+    },
+    ['Zone Drop / Hook-Curl', 'Blitz Timing', 'Edge Rush / Bend', 'Read and React (Run Fits)'],
+    ['COL','PRO']),
+
+  play('Mike Blitz (Inside LB)', 'blitz', 'Base / Nickel',
+    'Send the Mike linebacker through the A or B gap. Simple, effective interior pressure.',
+    {
+      DB:  'Man behind the blitz. Everyone locks on. No free players in coverage.',
+      LB:  'Mike: time the snap, shoot your gap. Will: fill the Mike\'s vacated area. Don\'t leave the middle empty.',
+      DL:  'Occupy blockers so the Mike comes free. If the center slides to the Mike, the DT opposite has a 1-on-1.',
+      Safety: 'Replace the Mike in the underneath zone if it\'s zone behind. If man, cover your assignment.',
+    },
+    ['Blitz Timing', 'Tackle Circuit', 'Read and React (Run Fits)', 'Shed Block Drill'],
+    ['HS','COL','PRO']),
+
+  play('Nickel Blitz Package', 'blitz', 'Nickel',
+    'The nickel DB blitzes off the slot while the safety rotates down to cover the slot receiver.',
+    {
+      DB:  'Nickel: attack the B-gap or edge at the snap. Corner: take the slot receiver — the nickel is rushing. Safety rotates to help.',
+      LB:  'Drop or cover your man. The pressure is coming from the secondary — stay disciplined.',
+      DL:  '4-man rush plus the nickel makes 5. One rusher should be free. Occupy your man and let the nickel get home.',
+      Safety: 'Rotate to the slot area pre-snap to disguise. Post-snap: cover the slot receiver the nickel left behind.',
+    },
+    ['Blitz Timing', 'Edge Rush / Bend', 'Press Coverage', 'Backpedal-to-Sprint Transition'],
+    ['COL','PRO']),
+
+  play('Simulated Pressure (Sim Blitz)', 'blitz', 'Nickel / Dime',
+    'Show blitz with 6-7 defenders at the line, but only rush 4. The rest drop into coverage. Confuses the QB\'s pre-snap read.',
+    {
+      DB:  'Walk up like you\'re blitzing, then bail into coverage at the snap. Disguise is everything.',
+      LB:  'Align like a blitz. At the snap: designated rushers go, everyone else drops. The offense thinks pressure is coming from everywhere.',
+      DL:  '4-man rush. The walked-up defenders are dropping — you still need to win your matchup.',
+      Safety: 'Can walk up to sell the blitz, then rotate deep. Make the QB think he\'s getting hit.',
+    },
+    ['Zone Drop / Hook-Curl', 'Blitz Timing', 'Film Study Session', 'Backpedal-to-Sprint Transition'],
+    ['COL','PRO']),
+
+  play('Delayed Blitz', 'blitz', 'Nickel',
+    'LB waits 1-2 seconds after the snap, then rushes. The OL has already committed to their pass sets — the LB finds the gap.',
+    {
+      DB:  'Man or zone behind. Hold your coverage a beat longer — the delayed rush takes time.',
+      LB:  'Read the play for one count like you\'re dropping. Then attack the gap that opens when the OL commits to the DL.',
+      DL:  'Rush hard initially to occupy blockers. The LB is coming late — create the gap for him.',
+      Safety: 'Stay disciplined. The delayed blitz takes longer to get home, so coverage needs to hold.',
+    },
+    ['Blitz Timing', 'Read and React (Run Fits)', 'Zone Drop / Hook-Curl', 'Shed Block Drill'],
+    ['COL','PRO']),
+
   // ══════════════════════════════════════════════════════════════
   // DEFENSIVE FRONTS
   // ══════════════════════════════════════════════════════════════
@@ -488,6 +631,83 @@ export const FOOTBALL_PLAYS = [
       Safety: 'Same as base. Adjust to the extra DB in the formation. More coverage flexibility.',
     },
     ['Tackling in Space', 'Press Coverage', 'Break on the Ball', 'Pass Set / Kick Step'],
+    ['HS','COL','PRO']),
+
+  play('46 Defense', 'front', 'Base / Goal Line',
+    'Buddy Ryan\'s famous front — 6 defenders on the line, 1 safety deep. Extreme aggression, stops the run, creates chaos.',
+    {
+      DB:  'Man coverage with limited safety help. Play physical — the front is bringing heat.',
+      LB:  'Walk up to the line. You\'re a de facto DL. Fire gaps, attack the LOS, read and react on the move.',
+      DL:  '4 down linemen with 2 LBs walked up = 6 on the line. Slant, stunt, and attack. Overwhelm the OL.',
+      Safety: 'SS is walked up near the LOS as a run defender. FS is single-high — you\'re the only deep help. Don\'t get beat.',
+    },
+    ['Blitz Timing', 'Bull Rush', 'DL Get-Off Drill', 'Tackle Circuit'],
+    ['COL','PRO']),
+
+  play('Bear Front', 'front', 'Base / Short Yardage',
+    'Nose tackle heads up on the center, two DTs in the B-gaps. Clogs every interior gap — designed to stop the run.',
+    {
+      DB:  'Play your coverage. The front is handling the run — don\'t get caught peeking in the backfield.',
+      LB:  'Free to flow. The DL is eating up blocks — read your keys and fill the gaps they can\'t reach.',
+      DL:  'Nose: lock up the center, control both A-gaps. DTs: attack the B-gaps, don\'t get reached. DEs: set the edge.',
+      Safety: 'SS in run support. FS deep. If it\'s a run, trigger downhill. If it\'s pass, bail to your zone.',
+    },
+    ['DL Get-Off Drill', 'Bull Rush', 'Shed Block Drill', 'Read and React (Run Fits)'],
+    ['HS','COL','PRO']),
+
+  play('4-3 Under', 'front', 'Base Defense',
+    'Opposite of 4-3 Over — shifted to the weak side. The 3-tech is to the weak side, creating a different gap-pressure look.',
+    {
+      DB:  'Coverage stays the same. Adjust to the front shift.',
+      LB:  'Sam (strong-side): walked up as a de facto DE on the strong side. Will: free to flow weak. Mike: A-gap.',
+      DL:  '3-tech weak side. The strong DE is head up on the tackle. Creates weak-side pressure.',
+      Safety: 'Strong safety may need to help set the edge to the strong side since the Sam is walked up.',
+    },
+    ['Read and React (Run Fits)', 'DL Get-Off Drill', 'Shed Block Drill', 'Edge Rush / Bend'],
+    ['COL','PRO']),
+
+  play('Dime (6 DBs)', 'front', 'Sub Package',
+    'Replace 2 LBs with 6 DBs. Extreme passing-down defense — used in obvious pass situations and 2-minute drill.',
+    {
+      DB:  '6 DBs on the field. Dime back covers the 3rd WR or RB in space. Must be able to tackle in the open field.',
+      LB:  '1 LB only (Mike). You\'re the only LB — everything funnels through you. Run game and underneath coverage.',
+      DL:  '4-man rush, possibly 3. Must generate pressure with fewer rushers. Win your 1-on-1.',
+      Safety: 'Two deep or man responsibilities. Extra DBs give you coverage flexibility — disguise pre-snap.',
+    },
+    ['Tackling in Space', 'Press Coverage', 'Man-to-Man / Trail Technique', 'Break on the Ball'],
+    ['COL','PRO']),
+
+  play('Odd Stack (3-3-5)', 'front', 'Base / Spread Offense Counter',
+    'Three down linemen, three LBs stacked behind them, five DBs. Built to defend the spread — speed over size.',
+    {
+      DB:  '5 DBs cover 4 WRs and the RB. Play your technique. The extra speed on the field lets you match up in space.',
+      LB:  '3 LBs stacked directly behind the 3 DL. Read through the OL to the RB. Scrape to the ball.',
+      DL:  'Nose plus 2 DEs. Control your gaps. The LBs are right behind you — keep them clean.',
+      Safety: 'Can play deep or walk up as a hybrid LB/S. Versatility is the strength of this defense.',
+    },
+    ['Read and React (Run Fits)', 'Tackling in Space', 'Backpedal-to-Sprint Transition', 'Zone Drop / Hook-Curl'],
+    ['HS','COL']),
+
+  play('DL Stunt / Twist', 'front', 'Any Front',
+    'Interior DL stunts — one crashes inside while the other loops around behind. Confuses blocking assignments.',
+    {
+      DB:  'Coverage holds. Stunts create quick pressure — be ready for a faster throw than usual.',
+      LB:  'Read through the stunt. The OL may get displaced — fill the gaps that open.',
+      DL:  'Penetrator: crash hard into your gap, draw the blocker. Looper: wrap behind the penetrator into the vacated gap. Timing is critical.',
+      Safety: 'If the stunt gets home fast, the ball comes out fast. Stay in position.',
+    },
+    ['DL Get-Off Drill', 'Swim Move', 'Spin Move', 'Bull Rush'],
+    ['HS','COL','PRO']),
+
+  play('Goal Line Defense (6-2 / 5-3)', 'front', 'Goal Line',
+    'Heavy front inside the 5-yard line. Stack the box, take away the run, and make them throw into tight coverage.',
+    {
+      DB:  'Press man coverage. The field is compressed — they have no room to run routes. Be physical.',
+      LB:  'Fill every gap. Fit your run keys. If they try to jump it over the top, the QB has no time.',
+      DL:  '5-6 down linemen. Win the line of scrimmage. Get penetration into the backfield. Low pad level wins.',
+      Safety: 'In the box or man on the TE. Everyone is in the fight on the goal line.',
+    },
+    ['Tackle Circuit', 'Bull Rush', 'DL Get-Off Drill', 'Press Coverage'],
     ['HS','COL','PRO']),
 
   // ══════════════════════════════════════════════════════════════
