@@ -29,38 +29,83 @@ export async function searchExercises(term, limit = 20) {
   return data.suggestions || [];
 }
 
-// ── Video Search (Piped API — free YouTube proxy, no key) ─────
-// Returns video results with IDs that can be embedded as YouTube iframes
+// ── Video Search (multiple free YouTube proxy APIs, no key) ───
+// Tries Piped instances, then Invidious instances, then returns fallback
 
 const PIPED_INSTANCES = [
   'https://pipedapi.kavin.rocks',
   'https://pipedapi.adminforge.de',
   'https://api.piped.projectsegfau.lt',
+  'https://pipedapi.r4fo.com',
+  'https://pipedapi.leptons.xyz',
 ];
 
-async function pipedFetch(path) {
+const INVIDIOUS_INSTANCES = [
+  'https://inv.nadeko.net',
+  'https://invidious.nerdvpn.de',
+  'https://invidious.materialio.us',
+  'https://yewtu.be',
+];
+
+// Try Piped API
+async function tryPiped(query) {
   for (const base of PIPED_INSTANCES) {
     try {
-      const res = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(5000) });
-      if (res.ok) return res.json();
+      const res = await fetch(
+        `${base}/search?q=${encodeURIComponent(query)}&filter=videos`,
+        { signal: AbortSignal.timeout(6000) }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const items = (data.items || []).filter(v => v.type === 'stream').slice(0, 8);
+      if (items.length === 0) continue;
+      return items.map(v => ({
+        id: v.url?.replace('/watch?v=', '') || '',
+        title: v.title || '',
+        thumbnail: v.thumbnail || '',
+        duration: v.duration || 0,
+        channel: v.uploaderName || '',
+        views: v.views || 0,
+      }));
     } catch { /* try next */ }
   }
-  throw new Error('Video search unavailable');
+  return null;
 }
 
-export async function searchVideos(query, filter = 'videos') {
-  const data = await pipedFetch(`/search?q=${encodeURIComponent(query)}&filter=${filter}`);
-  return (data.items || [])
-    .filter(v => v.type === 'stream')
-    .slice(0, 8)
-    .map(v => ({
-      id: v.url?.replace('/watch?v=', '') || '',
-      title: v.title || '',
-      thumbnail: v.thumbnail || '',
-      duration: v.duration || 0,
-      channel: v.uploaderName || '',
-      views: v.views || 0,
-    }));
+// Try Invidious API
+async function tryInvidious(query) {
+  for (const base of INVIDIOUS_INSTANCES) {
+    try {
+      const res = await fetch(
+        `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
+        { signal: AbortSignal.timeout(6000) }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const items = (data || []).filter(v => v.type === 'video').slice(0, 8);
+      if (items.length === 0) continue;
+      return items.map(v => ({
+        id: v.videoId || '',
+        title: v.title || '',
+        thumbnail: v.videoThumbnails?.[0]?.url || '',
+        duration: v.lengthSeconds || 0,
+        channel: v.author || '',
+        views: v.viewCount || 0,
+      }));
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
+export async function searchVideos(query) {
+  // Try Piped first, then Invidious
+  const piped = await tryPiped(query);
+  if (piped) return piped;
+
+  const invidious = await tryInvidious(query);
+  if (invidious) return invidious;
+
+  throw new Error('Video search unavailable');
 }
 
 // Build a YouTube embed URL from a video ID

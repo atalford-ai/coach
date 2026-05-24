@@ -152,10 +152,21 @@ function VideoPopout({ query, onClose }) {
         )}
 
         {error && (
-          <div style={{ textAlign: 'center', padding: 20, color: '#ff6666', fontSize: 13 }}>
-            {error}
-            <div style={{ fontSize: 12, color: THEME.g500, marginTop: 8 }}>
-              Video search may be temporarily unavailable. Try again shortly.
+          <div style={{ textAlign: 'center', padding: 20, fontSize: 13 }}>
+            <a
+              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block', padding: '14px 20px', marginBottom: 12,
+                background: '#ff0000', color: '#fff', borderRadius: 10,
+                textDecoration: 'none', ...S.header, fontSize: 15,
+              }}
+            >
+              OPEN ON YOUTUBE
+            </a>
+            <div style={{ fontSize: 12, color: THEME.g500 }}>
+              Embedded search is temporarily unavailable. Tap above to watch on YouTube.
             </div>
           </div>
         )}
