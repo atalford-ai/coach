@@ -3,6 +3,12 @@
 
 const WGER_BASE = 'https://wger.de/api/v2';
 
+// ── YouTube API Key ───────────────────────────────────────────
+// Set in Railway env vars or in a .env file as VITE_YOUTUBE_API_KEY
+// Get a free key at: https://console.cloud.google.com/apis/credentials
+// Enable "YouTube Data API v3" — free tier = 10,000 units/day
+const YT_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY || '';
+
 // ── Wger Exercise API (free, no key) ──────────────────────────
 export async function fetchExercises({ category, muscle, limit = 20, offset = 0 } = {}) {
   const params = new URLSearchParams({
@@ -29,57 +35,45 @@ export async function searchExercises(term, limit = 20) {
 }
 
 // ── Video Search ──────────────────────────────────────────────
-// Tries multiple free APIs to get YouTube video IDs for embedding.
-// Order: Piped → Invidious → CORS-proxy scrape → returns empty
+// Primary: YouTube Data API v3 (requires VITE_YOUTUBE_API_KEY)
+// Fallback: Invidious free instances
 
-const PIPED_INSTANCES = [
-  'https://pipedapi.kavin.rocks',
-  'https://pipedapi.adminforge.de',
-  'https://api.piped.projectsegfau.lt',
-  'https://pipedapi.r4fo.com',
-  'https://pipedapi.leptons.xyz',
-];
-
-const INVIDIOUS_INSTANCES = [
-  'https://inv.nadeko.net',
-  'https://invidious.nerdvpn.de',
-  'https://invidious.materialio.us',
-  'https://yewtu.be',
-  'https://inv.tux.pizza',
-  'https://invidious.protokolltier.dev',
-];
-
-const CORS_PROXIES = [
-  'https://corsproxy.io/?url=',
-  'https://api.allorigins.win/raw?url=',
-];
-
-// Try Piped API
-async function tryPiped(query) {
-  for (const base of PIPED_INSTANCES) {
-    try {
-      const res = await fetch(
-        `${base}/search?q=${encodeURIComponent(query)}&filter=videos`,
-        { signal: AbortSignal.timeout(6000) }
-      );
-      if (!res.ok) continue;
-      const data = await res.json();
-      const items = (data.items || []).filter(v => v.type === 'stream').slice(0, 8);
-      if (items.length === 0) continue;
-      return items.map(v => ({
-        id: v.url?.replace('/watch?v=', '') || '',
-        title: v.title || '',
-        thumbnail: v.thumbnail || '',
-        duration: v.duration || 0,
-        channel: v.uploaderName || '',
-        views: v.views || 0,
-      }));
-    } catch { /* try next */ }
-  }
-  return null;
+// YouTube Data API v3 — official, reliable, free tier
+async function tryYouTubeAPI(query) {
+  if (!YT_API_KEY) return null;
+  try {
+    const params = new URLSearchParams({
+      part: 'snippet',
+      q: query,
+      type: 'video',
+      maxResults: '8',
+      key: YT_API_KEY,
+    });
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?${params}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.items || []).map(v => ({
+      id: v.id?.videoId || '',
+      title: v.snippet?.title || '',
+      thumbnail: v.snippet?.thumbnails?.medium?.url || v.snippet?.thumbnails?.default?.url || '',
+      duration: 0,
+      channel: v.snippet?.channelTitle || '',
+      views: 0,
+    }));
+  } catch { return null; }
 }
 
-// Try Invidious API
+// Invidious free instances (fallback)
+const INVIDIOUS_INSTANCES = [
+  'https://invidious.materialio.us',
+  'https://inv.nadeko.net',
+  'https://yewtu.be',
+  'https://invidious.nerdvpn.de',
+];
+
 async function tryInvidious(query) {
   for (const base of INVIDIOUS_INSTANCES) {
     try {
@@ -94,7 +88,7 @@ async function tryInvidious(query) {
       return items.map(v => ({
         id: v.videoId || '',
         title: v.title || '',
-        thumbnail: v.videoThumbnails?.[0]?.url || '',
+        thumbnail: v.videoThumbnails?.[0]?.url || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
         duration: v.lengthSeconds || 0,
         channel: v.author || '',
         views: v.viewCount || 0,
@@ -104,10 +98,11 @@ async function tryInvidious(query) {
   return null;
 }
 
-// Try CORS proxy to scrape YouTube search results for video IDs
+// CORS proxy scrape (last resort)
 async function tryCorsProxy(query) {
+  const proxies = ['https://corsproxy.io/?url=', 'https://api.allorigins.win/raw?url='];
   const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-  for (const proxy of CORS_PROXIES) {
+  for (const proxy of proxies) {
     try {
       const res = await fetch(
         `${proxy}${encodeURIComponent(ytUrl)}`,
@@ -115,31 +110,19 @@ async function tryCorsProxy(query) {
       );
       if (!res.ok) continue;
       const html = await res.text();
-      // Extract video IDs from YouTube's HTML/JSON
       const ids = [];
       const regex = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
       let match;
       const seen = new Set();
       while ((match = regex.exec(html)) !== null && ids.length < 8) {
-        if (!seen.has(match[1])) {
-          seen.add(match[1]);
-          ids.push(match[1]);
-        }
+        if (!seen.has(match[1])) { seen.add(match[1]); ids.push(match[1]); }
       }
       if (ids.length === 0) continue;
-      // Extract titles if possible
-      const titleRegex = /"title":\{"runs":\[\{"text":"(.*?)"\}/g;
-      const titles = [];
-      while ((match = titleRegex.exec(html)) !== null) {
-        titles.push(match[1]);
-      }
       return ids.map((id, i) => ({
         id,
-        title: titles[i] || `${query} — Video ${i + 1}`,
+        title: `${query} — Video ${i + 1}`,
         thumbnail: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
-        duration: 0,
-        channel: '',
-        views: 0,
+        duration: 0, channel: '', views: 0,
       }));
     } catch { /* try next */ }
   }
@@ -147,17 +130,18 @@ async function tryCorsProxy(query) {
 }
 
 export async function searchVideos(query) {
-  // Try each approach in order
-  const piped = await tryPiped(query);
-  if (piped) return piped;
+  // 1. YouTube Data API (best — needs key)
+  const yt = await tryYouTubeAPI(query);
+  if (yt && yt.length > 0) return yt;
 
-  const invidious = await tryInvidious(query);
-  if (invidious) return invidious;
+  // 2. Invidious free instances
+  const inv = await tryInvidious(query);
+  if (inv) return inv;
 
+  // 3. CORS proxy scrape
   const proxy = await tryCorsProxy(query);
   if (proxy) return proxy;
 
-  // Return empty array instead of throwing — the UI handles this
   return [];
 }
 
